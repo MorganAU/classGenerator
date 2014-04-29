@@ -21,7 +21,7 @@ public:
 public slots:
     void montrerCodeGenere();
 
-private:
+protected:
     //Définition de la classe à créer
     QGroupBox *m_defClasse;
     QFormLayout *m_infosClasse;

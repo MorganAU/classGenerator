@@ -15,10 +15,7 @@ public:
     ~FenCodeGenere();
 
 private:
-    QVBoxLayout *m_fenetre;
-    QString *m_codeACopier;
-    QTextEdit *m_codeGenere;
-
+    QTextEdit *m_fenetre;
 };
 
 #endif // FENCODEGENERE_H
