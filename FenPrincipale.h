@@ -9,6 +9,7 @@
 #include <QCheckBox>
 #include <QTextEdit>
 #include <QPushButton>
+#include <QDialog>
 
 class FenPrincipale : public QWidget
 {
@@ -21,7 +22,7 @@ public:
 public slots:
     void montrerCodeGenere();
 
-protected:
+private:
     //Définition de la classe à créer
     QGroupBox *m_defClasse;
     QFormLayout *m_infosClasse;
@@ -50,10 +51,6 @@ protected:
 
     //LayoutPrincipale
     QVBoxLayout *m_layoutPrincipale;
-
-    //Classe fille
-
-    FenCodeGenere m_codeGenerer;
 };
 
 #endif // FENPRINCIPALE_H

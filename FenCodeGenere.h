@@ -2,11 +2,11 @@
 #define FENCODEGENERE_H
 
 #include <QApplication>
+#include <QDialog>
+#include <QBoxLayout>
 #include <QTextEdit>
-#include <QMessageBox>
-#include <QVBoxLayout>
 
-class FenCodeGenere : public QWidget
+class FenCodeGenere : public QDialog
 {
     Q_OBJECT
 
@@ -15,7 +15,9 @@ public:
     ~FenCodeGenere();
 
 private:
-    QTextEdit *m_fenetre;
+    QDialog *m_fenetreCodeGenere;
+    QVBoxLayout *m_codeGenere;
+    QTextEdit *m_codeFinal;
 };
 
 #endif // FENCODEGENERE_H

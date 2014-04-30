@@ -1,11 +1,18 @@
 #include "FenCodeGenere.h"
+#include "FenPrincipale.h"
 
-FenCodeGenere::FenCodeGenere() : QWidget()
+FenCodeGenere::FenCodeGenere() : QDialog()
 {
-    m_fenetre = new QTextEdit("Données à rentrer");
+    //Création de la seconde fenêtre
+    m_fenetreCodeGenere = new QDialog();
+    m_codeGenere = new QVBoxLayout(m_fenetreCodeGenere);
+    m_codeFinal = new QTextEdit();
 
-    m_fenetre->setReadOnly(true);
-    m_fenetre->show();
+    //Layouts
+    m_codeGenere->addWidget(m_codeFinal);
+
+
+    m_fenetreCodeGenere->show();
 }
 
 FenCodeGenere::~FenCodeGenere()
