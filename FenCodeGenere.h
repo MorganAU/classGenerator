@@ -13,11 +13,14 @@ class FenCodeGenere : public QDialog
 public:
     FenCodeGenere();
     ~FenCodeGenere();
+    FenCodeGenere(QString code);
 
 private:
     QDialog *m_fenetreCodeGenere;
     QVBoxLayout *m_codeGenere;
     QTextEdit *m_codeFinal;
+    QPushButton *m_fermer;
+
 };
 
 #endif // FENCODEGENERE_H

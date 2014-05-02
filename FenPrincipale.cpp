@@ -1,4 +1,5 @@
 #include "FenPrincipale.h"
+#include <string>
 
 
 FenPrincipale::FenPrincipale() : QWidget()
@@ -9,6 +10,7 @@ FenPrincipale::FenPrincipale() : QWidget()
     m_defClasse = new QGroupBox(QString::fromUtf8("Définition de la classe"));
     m_infosClasse = new QFormLayout(m_defClasse);
     m_nomClasse = new QLineEdit();
+    m_nomClasse->setInputMask("NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN");
     m_classeMere = new QLineEdit();
     m_infosClasse->addRow("&Nom :", m_nomClasse);
     m_infosClasse->addRow(QString::fromUtf8("Classe &mère :"), m_classeMere);
@@ -29,7 +31,9 @@ FenPrincipale::FenPrincipale() : QWidget()
     m_commentaires->setChecked(false);
     m_listeCommentaires = new QFormLayout(m_commentaires);
     m_auteur = new QLineEdit();
-    m_creation = new QLineEdit();
+    m_creation = new QDateEdit(QDate::currentDate());
+    m_creation->setMaximumDate(QDate::currentDate());
+    m_creation->setMinimumDate(QDate::currentDate());
     m_role = new QTextEdit();
     m_listeCommentaires->addRow("&Auteur", m_auteur);
     m_listeCommentaires->addRow(QString::fromUtf8("Da&te de création"), m_creation);
@@ -50,19 +54,60 @@ FenPrincipale::FenPrincipale() : QWidget()
     m_layoutPrincipale->addLayout(m_boutons);
 
     //Paramétrage des boutons
-    QObject::connect(m_quitter, SIGNAL(clicked()), qApp, SLOT(quit()));
-    QObject::connect(m_generer, SIGNAL(clicked()), this, SLOT(montrerCodeGenere()));
+    QObject::connect(m_generer, SIGNAL(clicked()), this, SLOT(valideOuPas()));
 
+
+    //QObject::connect(m_generer, SIGNAL(clicked()), this, SLOT(messageErreur()));
+    QObject::connect(m_quitter, SIGNAL(clicked()), qApp, SLOT(quit()));
 }
 
 FenPrincipale::~FenPrincipale()
 {}
 
-void FenPrincipale::montrerCodeGenere()
+QString FenPrincipale::genererCode()
 {
-    FenCodeGenere fenetre;
+    QString code;
+    QString commentaires;
+
+    commentaires = m_role->toPlainText();
+
+    if(m_commentaires->isChecked() == true)
+    {
+        code = "/* \n";
+        if(m_auteur->text() != "")
+        {
+            code += "Auteur : " + m_auteur->text() + '\n';
+        }
+
+        code += QString::fromUtf8("Date de création : ") + m_creation->text() + '\n';
+
+        if(commentaires != "")
+        {
+            code += commentaires + '\n';
+        }
+
+        code += "*/";
+    }
+    return code;
 }
 
+void FenPrincipale::montrerCodeGenere()
+{
+    QString codeAGenerer = genererCode();
+    FenCodeGenere fenetre(codeAGenerer);
+}
 
+void FenPrincipale::valideOuPas()
+{
+    QString nomDeLaClasse;
+    nomDeLaClasse = m_nomClasse->text();
 
-
+    if(nomDeLaClasse.isEmpty() == false)
+    {
+        emit montrerCodeGenere();
+    }
+    else
+    {
+        emit QMessageBox::critical(this, "Erreur !!!", "Veuillez entrer le nom de la classe");
+    }
+}

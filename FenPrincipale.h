@@ -10,6 +10,8 @@
 #include <QTextEdit>
 #include <QPushButton>
 #include <QDialog>
+#include <QDateEdit>
+#include <QMessageBox>
 
 class FenPrincipale : public QWidget
 {
@@ -18,9 +20,11 @@ class FenPrincipale : public QWidget
 public:
     FenPrincipale();
     ~FenPrincipale();
+    QString genererCode();
 
 public slots:
     void montrerCodeGenere();
+    void valideOuPas();
 
 private:
     //Définition de la classe à créer
@@ -41,7 +45,7 @@ private:
     QGroupBox *m_commentaires;
     QFormLayout *m_listeCommentaires;
     QLineEdit *m_auteur;
-    QLineEdit *m_creation;
+    QDateEdit *m_creation;
     QTextEdit *m_role;
 
     //Boutons
@@ -51,6 +55,7 @@ private:
 
     //LayoutPrincipale
     QVBoxLayout *m_layoutPrincipale;
+
 };
 
 #endif // FENPRINCIPALE_H
