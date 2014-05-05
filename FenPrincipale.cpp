@@ -10,7 +10,6 @@ FenPrincipale::FenPrincipale() : QWidget()
     m_defClasse = new QGroupBox(QString::fromUtf8("Définition de la classe"));
     m_infosClasse = new QFormLayout(m_defClasse);
     m_nomClasse = new QLineEdit();
-    m_nomClasse->setInputMask("NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN");
     m_classeMere = new QLineEdit();
     m_infosClasse->addRow("&Nom :", m_nomClasse);
     m_infosClasse->addRow(QString::fromUtf8("Classe &mère :"), m_classeMere);
@@ -20,6 +19,7 @@ FenPrincipale::FenPrincipale() : QWidget()
     m_listeOptions = new QVBoxLayout(m_options);
     m_protectHeader = new QCheckBox(QString::fromUtf8("Protéger le &header contre les inclusions multiples"));
     m_constructeur = new QCheckBox(QString::fromUtf8("Générer un &constructeur par défaut"));
+    m_constructeur->setChecked(false);
     m_destructeur = new QCheckBox(QString::fromUtf8("Générer un &destructeur"));
     m_listeOptions->addWidget(m_protectHeader);
     m_listeOptions->addWidget(m_constructeur);
@@ -67,27 +67,83 @@ FenPrincipale::~FenPrincipale()
 QString FenPrincipale::genererCode()
 {
     QString code;
-    QString commentaires;
 
+    QString commentaires;
     commentaires = m_role->toPlainText();
+
+    QString nomClasse;
+    nomClasse = m_nomClasse->text();
 
     if(m_commentaires->isChecked() == true)
     {
-        code = "/* \n";
+        code = QString::fromAscii("/*") + '\n';
+
         if(m_auteur->text() != "")
         {
             code += "Auteur : " + m_auteur->text() + '\n';
         }
-
         code += QString::fromUtf8("Date de création : ") + m_creation->text() + '\n';
+        code += '\n';
 
         if(commentaires != "")
         {
             code += commentaires + '\n';
         }
-
-        code += "*/";
+        code += QString::fromAscii("*/") + '\n' + '\n' + '\n' + '\n';
     }
+
+    if(m_protectHeader->isChecked() == true)
+    {
+        code += "#ifndef " + nomClasse.toUpper() + "_H" + '\n';
+        code += "#define " + nomClasse.toUpper() + "_H" + '\n' + '\n' + '\n';
+    }
+    code += "class " + m_nomClasse->text();
+
+    QString classeMere;
+    classeMere = m_classeMere->text();
+
+    if(classeMere.isEmpty() == false)
+    {
+        code += " : public " + m_classeMere->text() + '\n';
+    }
+    else
+    {
+        code += '\n';
+    }
+    code += QString::fromAscii("{") + '\n';
+
+    if(m_constructeur->isChecked() == true)
+    {
+        code += QString::fromAscii("public:") + '\n';
+
+        if(m_destructeur->isChecked() == true)
+        {
+            code += '\t' + m_nomClasse->text() + "();" + '\n';
+            code += '\t' + QString::fromAscii("~") + m_nomClasse->text() + "();" + '\n' + '\n';
+        }
+        else
+        {
+            code += '\t' + m_nomClasse->text() + "();" + '\n' + '\n' + '\n';
+        }
+    }
+    else if(m_destructeur->isChecked() == true)
+    {
+        code += QString::fromAscii("public:") + '\n' + '\n';
+        code += '\t' + QString::fromAscii("~") + m_nomClasse->text() + "();" + '\n' + '\n';
+    }
+    else
+    {
+        code += QString::fromAscii("public:") + '\n' + '\n' + '\n' + '\n';
+    }
+    code += QString::fromAscii("protected:") + '\n' + '\n' + '\n' + '\n';
+    code += QString::fromAscii("private:") + '\n' + '\n' + '\n' + '\n';
+    code += QString::fromAscii("};") + '\n' + '\n';
+
+    if(m_protectHeader->isChecked() == true)
+    {
+        code += QString::fromAscii("#endif // ") + nomClasse.toUpper() + "_H";
+    }
+
     return code;
 }
 
@@ -102,12 +158,15 @@ void FenPrincipale::valideOuPas()
     QString nomDeLaClasse;
     nomDeLaClasse = m_nomClasse->text();
 
+    QString nomClasseMere;
+    nomClasseMere = m_classeMere->text();
+
     if(nomDeLaClasse.isEmpty() == false)
     {
         emit montrerCodeGenere();
     }
     else
     {
-        emit QMessageBox::critical(this, "Erreur !!!", "Veuillez entrer le nom de la classe");
+        emit QMessageBox::critical(this, "Erreur !!!", "Veuillez entrer le nom de la classe !!!");
     }
 }

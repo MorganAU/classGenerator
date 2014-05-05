@@ -55,7 +55,6 @@ private:
 
     //LayoutPrincipale
     QVBoxLayout *m_layoutPrincipale;
-
 };
 
 #endif // FENPRINCIPALE_H

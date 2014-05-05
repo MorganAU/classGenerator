@@ -14,6 +14,9 @@ FenCodeGenere::FenCodeGenere(QString code)
     m_fenetreCodeGenere->setModal(true);
     m_codeGenere = new QVBoxLayout(m_fenetreCodeGenere);
     m_codeFinal = new QTextEdit();
+    m_codeFinal->setTabStopWidth(25);
+    m_codeFinal->setFont(QFont("Courier"));
+    m_codeFinal->setReadOnly(true);
     m_codeFinal->setPlainText(code);
     m_fermer = new QPushButton("Fermer");
 
