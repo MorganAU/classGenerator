@@ -2,16 +2,13 @@
 #define FENPRINCIPALE_H
 
 #include "FenCodeGenere.h"
-#include <QApplication>
 #include <QLineEdit>
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QCheckBox>
-#include <QTextEdit>
 #include <QPushButton>
-#include <QDialog>
 #include <QDateEdit>
-#include <QMessageBox>
+#include <QComboBox>
 
 class FenPrincipale : public QWidget
 {
@@ -20,7 +17,9 @@ class FenPrincipale : public QWidget
 public:
     FenPrincipale();
     ~FenPrincipale();
-    QString genererCode();
+    QString genererCodeH();
+    QString genererCodeCpp();
+    QString licenceGPL();
 
 public slots:
     void montrerCodeGenere();
@@ -41,12 +40,18 @@ private:
     QCheckBox *m_destructeur;
 
     //Commentaires à ajouter
-    QCheckBox *m_confComm;
     QGroupBox *m_commentaires;
     QFormLayout *m_listeCommentaires;
-    QLineEdit *m_auteur;
+    QLineEdit *m_Auteur;
     QDateEdit *m_creation;
     QTextEdit *m_role;
+
+    //Choix d'une licence
+    QGroupBox *m_licence;
+    QFormLayout *m_optionsLicence;
+    QLineEdit *m_nomAuteur;
+    QLineEdit *m_prenomAuteur;
+    QComboBox *m_listeLicence;
 
     //Boutons
     QHBoxLayout *m_boutons;
@@ -55,6 +60,8 @@ private:
 
     //LayoutPrincipale
     QVBoxLayout *m_layoutPrincipale;
+
+
 };
 
 #endif // FENPRINCIPALE_H

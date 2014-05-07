@@ -6,6 +6,7 @@
 #include <QBoxLayout>
 #include <QTextEdit>
 #include <QMessageBox>
+#include <QTabWidget>
 
 class FenCodeGenere : public QDialog
 {
@@ -14,7 +15,7 @@ class FenCodeGenere : public QDialog
 public:
     FenCodeGenere();
     ~FenCodeGenere();
-    FenCodeGenere(QString code);
+    FenCodeGenere(QString &codeHeader, QString &codeCpp);
 
 public slots:
     void accepter();
@@ -22,7 +23,9 @@ public slots:
 private:
     QDialog *m_fenetreCodeGenere;
     QVBoxLayout *m_codeGenere;
-    QTextEdit *m_codeFinal;
+    QTextEdit *m_codeHeader;
+    QTextEdit *m_codeCpp;
+    QTabWidget *m_fichiers;
     QPushButton *m_fermer;
 
 };

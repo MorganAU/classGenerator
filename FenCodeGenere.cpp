@@ -7,22 +7,38 @@ FenCodeGenere::FenCodeGenere() : QDialog()
 FenCodeGenere::~FenCodeGenere()
 {}
 
-FenCodeGenere::FenCodeGenere(QString code)
+FenCodeGenere::FenCodeGenere(QString &codeHeader, QString &codeCpp)
 {
     //Création de la seconde fenêtre
     m_fenetreCodeGenere = new QDialog();
     m_fenetreCodeGenere->setModal(true);
+    m_fenetreCodeGenere->setGeometry(600, 600, 600, 600);
     m_codeGenere = new QVBoxLayout(m_fenetreCodeGenere);
-    m_codeFinal = new QTextEdit();
-    m_codeFinal->setTabStopWidth(25);
-    m_codeFinal->setFont(QFont("Courier"));
-    m_codeFinal->setReadOnly(true);
-    m_codeFinal->setPlainText(code);
+    m_fichiers = new QTabWidget();
+
+    //Fichier .h
+    m_codeHeader = new QTextEdit(m_fichiers);
+    m_codeHeader->setTabStopWidth(25);
+    m_codeHeader->setFont(QFont("Courier"));
+    m_codeHeader->setReadOnly(true);
+    m_codeHeader->setPlainText(codeHeader);
+
+    //Fichier .cpp
+    m_codeCpp = new QTextEdit(m_fichiers);
+    m_codeCpp->setTabStopWidth(25);
+    m_codeCpp->setFont(QFont("Courier"));
+    m_codeCpp->setReadOnly(true);
+    m_codeCpp->setPlainText(codeCpp);
+
+    //Bouton
     m_fermer = new QPushButton("Fermer");
 
     //Layouts
-    m_codeGenere->addWidget(m_codeFinal);
+    m_codeGenere->addWidget(m_fichiers);
     m_codeGenere->addWidget(m_fermer);
+
+    m_fichiers->addTab(m_codeHeader, "Fichier .h");
+    m_fichiers->addTab(m_codeCpp, "Fichier .cpp");
 
     //Connection bouton
     QObject::connect(m_fermer, SIGNAL(clicked()), this, SLOT(accepter()));

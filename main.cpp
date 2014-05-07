@@ -1,6 +1,4 @@
 #include <QApplication>
-#include <QWidget>
-#include <QMainWindow>
 #include <QTranslator>
 #include <QLibraryInfo>
 #include "FenPrincipale.h"
