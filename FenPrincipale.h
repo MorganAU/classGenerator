@@ -20,10 +20,15 @@ public:
     QString genererCodeH();
     QString genererCodeCpp();
     QString licenceGPL();
+    QString licenceLGPL();
+    QString licenceChoisi();
+    QString header();
 
 public slots:
     void montrerCodeGenere();
     void valideOuPas();
+    void headerCacheOuPas();
+    void genererHeader();
 
 private:
     //Définition de la classe à créer
@@ -36,6 +41,7 @@ private:
     QGroupBox *m_options;
     QVBoxLayout *m_listeOptions;
     QCheckBox *m_protectHeader;
+    QLineEdit *m_header;
     QCheckBox *m_constructeur;
     QCheckBox *m_destructeur;
 
@@ -60,8 +66,6 @@ private:
 
     //LayoutPrincipale
     QVBoxLayout *m_layoutPrincipale;
-
-
 };
 
 #endif // FENPRINCIPALE_H

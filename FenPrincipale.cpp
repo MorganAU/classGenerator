@@ -4,8 +4,6 @@
 
 FenPrincipale::FenPrincipale() : QWidget()
 {
-
-
     //Définition de la classe
     m_defClasse = new QGroupBox(QString::fromUtf8("Définition de la classe"));
     m_infosClasse = new QFormLayout(m_defClasse);
@@ -18,10 +16,13 @@ FenPrincipale::FenPrincipale() : QWidget()
     m_options = new QGroupBox("Options");
     m_listeOptions = new QVBoxLayout(m_options);
     m_protectHeader = new QCheckBox(QString::fromUtf8("Protéger le &header contre les inclusions multiples"));
+    m_header = new QLineEdit();
+    m_header->hide();
     m_constructeur = new QCheckBox(QString::fromUtf8("Générer un &constructeur par défaut"));
     m_constructeur->setChecked(true);
     m_destructeur = new QCheckBox(QString::fromUtf8("Générer un &destructeur"));
     m_listeOptions->addWidget(m_protectHeader);
+    m_listeOptions->addWidget(m_header);
     m_listeOptions->addWidget(m_constructeur);
     m_listeOptions->addWidget(m_destructeur);
 
@@ -53,6 +54,7 @@ FenPrincipale::FenPrincipale() : QWidget()
 
     //Liste des licences disponibles
     m_listeLicence->addItem("GPL");
+    m_listeLicence->addItem("LGPL");
 
     //Boutons
     m_boutons = new QHBoxLayout();
@@ -70,9 +72,11 @@ FenPrincipale::FenPrincipale() : QWidget()
     m_layoutPrincipale->addLayout(m_boutons);
 
 
-    //Paramétrage des boutons
+    //Connections signaux et slots
     QObject::connect(m_generer, SIGNAL(clicked()), this, SLOT(valideOuPas()));
     QObject::connect(m_quitter, SIGNAL(clicked()), qApp, SLOT(quit()));
+    QObject::connect(m_protectHeader, SIGNAL(stateChanged(int)), this, SLOT(headerCacheOuPas()));
+    QObject::connect(m_nomClasse, SIGNAL(textChanged(QString)), this, SLOT(genererHeader()));
 }
 
 FenPrincipale::~FenPrincipale()
@@ -83,7 +87,8 @@ QString FenPrincipale::genererCodeH()
    //Fichier .h
     QString codeH;
     QString commentaires = m_role->toPlainText();
-    QString nomClasse = m_nomClasse->text();
+
+    QString header = m_header->text();
 
     if(m_commentaires->isChecked() == true)
     {
@@ -105,8 +110,8 @@ QString FenPrincipale::genererCodeH()
 
     if(m_protectHeader->isChecked() == true)
     {
-        codeH += "#ifndef " + nomClasse.toUpper() + "_H" + '\n';
-        codeH += "#define " + nomClasse.toUpper() + "_H" + '\n' + '\n' + '\n';
+        codeH += "#ifndef " + header.toUpper() + '\n';
+        codeH += "#define " + header.toUpper() + '\n' + '\n' + '\n';
     }
     codeH += "class " + m_nomClasse->text();
 
@@ -151,7 +156,7 @@ QString FenPrincipale::genererCodeH()
 
     if(m_protectHeader->isChecked() == true)
     {
-        codeH += QString::fromAscii("#endif // ") + nomClasse.toUpper() + "_H";
+        codeH += QString::fromAscii("#endif // ") + header.toUpper();
     }
 
     return codeH;
@@ -169,7 +174,7 @@ QString FenPrincipale::genererCodeCpp()
 
         codeCpp += QString::fromAscii("/*") + '\n';
         codeCpp += "Copyright (C) " + date + " " + m_nomAuteur->text() + " " + m_prenomAuteur->text() + '\n' + '\n';
-        codeCpp += licenceGPL() + '\n' + QString::fromAscii("*/") + '\n' + '\n';
+        codeCpp += licenceChoisi() + '\n' + QString::fromAscii("*/") + '\n' + '\n';
     }
 
     codeCpp += "#include \"" + m_nomClasse->text() + "\"" + '\n' + '\n' + '\n';
@@ -206,6 +211,65 @@ QString FenPrincipale::genererCodeCpp()
     return codeCpp;
 }
 
+//Licences
+QString FenPrincipale::licenceGPL()
+{
+    QString licence;
+    licence += "This program is free software; you can redistribute it and/or modify";
+    licence += " it under the terms of the GNU General Public License as published by";
+    licence += " the Free Software Foundation; either version 2 of the License, or";
+    licence += " (at your option) any later version." + '\n' + '\n';
+
+    licence += "This program is distributed in the hope that it will be useful,";
+    licence += " but WITHOUT ANY WARRANTY; without even the implied warranty of";
+    licence += " MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the";
+    licence += " GNU General Public License for more details." + '\n' + '\n';
+
+    licence += "You should have received a copy of the GNU General Public License along";
+    licence += " with this program; if not, write to the Free Software Foundation, Inc.,";
+    licence += " 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA." + '\n' + '\n';
+
+    return licence;
+}
+
+QString FenPrincipale::licenceLGPL()
+{
+    QString licence;
+    licence += "This program is free software; you can redistribute it and/or";
+    licence += " modify it under the terms of the GNU Lesser General Public";
+    licence += " License as published by the Free Software Foundation; either";
+    licence += " version 2.1 of the License, or (at your option) any later version." + '\n' + '\n';
+
+    licence += "This program is distributed in the hope that it will be useful,";
+    licence += " but WITHOUT ANY WARRANTY; without even the implied warranty of";
+    licence += " MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU";
+    licence += " Lesser General Public License for more details." + '\n' + '\n';
+
+    licence += "You should have received a copy of the GNU Lesser General Public";
+    licence += " License along with this program; if not, write to the Free Software";
+    licence += " Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA" + '\n' + '\n';
+
+    return licence;
+}
+
+QString FenPrincipale::licenceChoisi()
+{
+    QString licence;
+
+    if(m_listeLicence->currentIndex() == 0)
+    {
+        licence = licenceGPL();
+    }
+    else if(m_listeLicence->currentIndex() == 1)
+    {
+        licence = licenceLGPL();
+    }
+
+    return licence;
+}
+
+
+//Slots
 void FenPrincipale::montrerCodeGenere()
 {
     QString codeH = genererCodeH();
@@ -243,22 +307,27 @@ void FenPrincipale::valideOuPas()
     }
 }
 
-QString FenPrincipale::licenceGPL()
+
+void FenPrincipale::headerCacheOuPas()
 {
-    QString licence;
-    licence += "This program is free software; you can redistribute it and/or modify ";
-    licence += " it under the terms of the GNU General Public License as published by ";
-    licence += " the Free Software Foundation; either version 2 of the License, or ";
-    licence += " (at your option) any later version." + '\n' + '\n';
+    QString nomClasse = m_nomClasse->text();
 
-    licence += "This program is distributed in the hope that it will be useful, ";
-    licence += " but WITHOUT ANY WARRANTY; without even the implied warranty of ";
-    licence += " MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the ";
-    licence += " GNU General Public License for more details." + '\n' + '\n';
-
-    licence += "You should have received a copy of the GNU General Public License along ";
-    licence += " with this program; if not, write to the Free Software Foundation, Inc., ";
-    licence += " 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA." + '\n' + '\n';
-
-    return licence;
+    if(m_header->isHidden())
+    {
+        m_header->setVisible(true);
+    }
+    else if(m_header->isVisible())
+    {
+        m_header->setHidden(true);
+    }
 }
+
+void FenPrincipale::genererHeader()
+{
+    QString nomClasse = m_nomClasse->text();
+    m_header->setText("HEADER_" + nomClasse.toUpper());
+}
+
+
+
+
