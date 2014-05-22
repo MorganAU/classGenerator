@@ -7,13 +7,14 @@ FenCodeGenere::FenCodeGenere() : QDialog()
 FenCodeGenere::~FenCodeGenere()
 {}
 
-FenCodeGenere::FenCodeGenere(QString &codeHeader, QString &codeCpp)
+FenCodeGenere::FenCodeGenere(QString &codeHeader, QString &codeCpp, QString &nom, QWidget *parent = 0) : QDialog(parent)
 {
+     nomClasse = nom;
     //Création de la seconde fenêtre
     m_fenetreCodeGenere = new QDialog();
     m_fenetreCodeGenere->setModal(true);
-    m_fenetreCodeGenere->setGeometry(600, 600, 600, 600);
-    m_codeGenere = new QVBoxLayout(m_fenetreCodeGenere);
+    setGeometry(600, 600, 600, 600);
+    m_codeGenere = new QVBoxLayout(this);
     m_fichiers = new QTabWidget();
 
     //Fichier .h
@@ -31,27 +32,46 @@ FenCodeGenere::FenCodeGenere(QString &codeHeader, QString &codeCpp)
     m_codeCpp->setPlainText(codeCpp);
 
     //Bouton
+    m_layoutBoutons = new QHBoxLayout();
     m_fermer = new QPushButton("Fermer");
+    m_sauvegarder = new QPushButton("Sauvegarder");
+    m_layoutBoutons->addWidget(m_sauvegarder);
+    m_layoutBoutons->addWidget(m_fermer);
 
     //Layouts
     m_codeGenere->addWidget(m_fichiers);
-    m_codeGenere->addWidget(m_fermer);
+    m_codeGenere->addLayout(m_layoutBoutons);
 
-    m_fichiers->addTab(m_codeHeader, "Fichier .h");
-    m_fichiers->addTab(m_codeCpp, "Fichier .cpp");
+    m_fichiers->addTab(m_codeHeader, nom + ".h");
+    m_fichiers->addTab(m_codeCpp, nom + ".cpp");
 
     //Connection bouton
-    QObject::connect(m_fermer, SIGNAL(clicked()), this, SLOT(accepter()));
-    m_fenetreCodeGenere->exec();
+    connect(m_sauvegarder, SIGNAL(clicked()), this, SLOT(sauvegarder()));
+    connect(m_fermer, SIGNAL(clicked()), this, SLOT(accept()));
+
 }
 
-void FenCodeGenere::accepter()
+void FenCodeGenere::sauvegarder()
 {
-    int reponse = emit QMessageBox::question(this, "Valider le code", QString::fromUtf8("Est-ce que ce code vous convient ?"), QMessageBox::Yes, QMessageBox::Cancel);
+    QString fichier = QFileDialog::getSaveFileName(this, "Enregistrer", nomClasse, "Tout");
 
-    if(reponse == QMessageBox::Yes)
-    {
-        QMessageBox::information(this, "Copie du code", QString::fromUtf8("Vous pouvez sélectionner le code. Après sélection, appuyer sur CTRL+C pour le copier et ensuite CTRL+V pour le coller."));
-    }
+    if (!fichier.isEmpty())
+        {
+        //Enregistrement
+            /* .h */
+            QFile sauvegardeH(fichier + ".h");
+            if (sauvegardeH.open(QFile::WriteOnly))
+            {
+                QTextStream out(&sauvegardeH);
+                out << m_codeHeader->toPlainText();
+            }
+            /* .cpp */
+            QFile sauvegardeCpp(fichier + ".cpp");
+            if (sauvegardeCpp.open(QFile::WriteOnly))
+            {
+                QTextStream out(&sauvegardeCpp);
+                out << m_codeCpp->toPlainText();
+            }
+        }
 }
 

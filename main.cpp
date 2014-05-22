@@ -13,7 +13,6 @@ int main(int argc, char*argv[])
     app.installTranslator(&translator);
 
     FenPrincipale fenetre;
-
     fenetre.show();
 
     return app.exec();

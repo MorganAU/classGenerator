@@ -4,11 +4,13 @@
 
 FenPrincipale::FenPrincipale() : QWidget()
 {
+    setGeometry(800, 800, 800, 1000);
+
     //Définition de la classe
     m_defClasse = new QGroupBox(QString::fromUtf8("Définition de la classe"));
     m_infosClasse = new QFormLayout(m_defClasse);
-    m_nomClasse = new QLineEdit();
-    m_classeMere = new QLineEdit();
+    m_nomClasse = new QLineEdit("Ex_emple");
+    m_classeMere = new QLineEdit("Ex_emple");
     m_infosClasse->addRow("&Nom :", m_nomClasse);
     m_infosClasse->addRow(QString::fromUtf8("Classe &mère :"), m_classeMere);
 
@@ -18,13 +20,58 @@ FenPrincipale::FenPrincipale() : QWidget()
     m_protectHeader = new QCheckBox(QString::fromUtf8("Protéger le &header contre les inclusions multiples"));
     m_header = new QLineEdit();
     m_header->hide();
+    m_ifndef = new QCheckBox("Inclure #i&fndef");
+    m_ifndef->hide();
+    m_define = new QCheckBox("Inclure #&define");
+    m_define->hide();
+    m_endif = new QCheckBox("Inclure #&endif");
+    m_endif->hide();
     m_constructeur = new QCheckBox(QString::fromUtf8("Générer un &constructeur par défaut"));
     m_constructeur->setChecked(true);
     m_destructeur = new QCheckBox(QString::fromUtf8("Générer un &destructeur"));
+
+    //Pour ajouter des attributs
+    m_attributs = new QCheckBox("Ajouter des attributs");
+    m_rechercher = new QLineEdit("Rechercher");
+    m_rechercher->hide();
+    m_parametreAttribut = new QHBoxLayout;
+    m_classeAttributs = new QLineEdit();
+    m_classeAttributs->setReadOnly(true);
+    m_classeAttributs->hide();
+    m_nomVariableAttributs = new QLineEdit("*m_Ex_emple");
+    m_nomVariableAttributs->hide();
+    m_parametreAttribut->addWidget(m_classeAttributs);
+    m_parametreAttribut->addWidget(m_nomVariableAttributs);
+    m_ajouter = new QPushButton("Ajouter");
+    m_ajouter->hide();
+    m_listeWidgets = new QListWidget();
+    m_listeWidgets->hide();
+    lireClasses();
+    m_listeWidgets->takeItem(831);
+    m_attributsAAjouter = new QListWidget();
+    m_attributsAAjouter->hide();
+    m_boutonsAttributs = new QHBoxLayout();
+    m_supprimer = new QPushButton("Supprimer");
+    m_supprimer->hide();
+    m_toutSuppr = new QPushButton("Tout supprimer");
+    m_toutSuppr->hide();
+    m_boutonsAttributs->addWidget(m_supprimer);
+    m_boutonsAttributs->addWidget(m_toutSuppr);
+
     m_listeOptions->addWidget(m_protectHeader);
     m_listeOptions->addWidget(m_header);
+    m_listeOptions->addWidget(m_ifndef);
+    m_listeOptions->addWidget(m_define);
+    m_listeOptions->addWidget(m_endif);
     m_listeOptions->addWidget(m_constructeur);
     m_listeOptions->addWidget(m_destructeur);
+    m_listeOptions->addWidget(m_attributs);
+    m_listeOptions->addWidget(m_listeWidgets);
+    m_listeOptions->addWidget(m_rechercher);
+    m_listeOptions->addLayout(m_parametreAttribut);
+    m_listeOptions->addWidget(m_ajouter);
+    m_listeOptions->addWidget(m_attributsAAjouter);
+    m_listeOptions->addLayout(m_boutonsAttributs);
 
     //Commentaires
     m_commentaires = new QGroupBox("Ajouter des commentaires");
@@ -71,12 +118,32 @@ FenPrincipale::FenPrincipale() : QWidget()
     m_layoutPrincipale->addWidget(m_licence);
     m_layoutPrincipale->addLayout(m_boutons);
 
+    //Règles de caractères
+    QRegExp rx("^[A-Z]+[A-Za-z_]+$");
+    QValidator *validatorClasse = new QRegExpValidator(rx);
+    m_classeMere->setValidator(validatorClasse);
+    m_nomClasse->setValidator(validatorClasse);
+
+    QRegExp rxAuteur("^[A-Za-z]+$");
+    QValidator *validatorAuteur = new QRegExpValidator(rxAuteur);
+    m_nomAuteur->setValidator(validatorAuteur);
+    m_prenomAuteur->setValidator(validatorAuteur);
+
+    QRegExp rxAttribut("^[*m_]+[a-z]+[A-Z]+$");
+    QValidator *validatorAttribut = new QRegExpValidator(rxAttribut);
+    m_nomVariableAttributs->setValidator(validatorAttribut);
 
     //Connections signaux et slots
-    QObject::connect(m_generer, SIGNAL(clicked()), this, SLOT(valideOuPas()));
-    QObject::connect(m_quitter, SIGNAL(clicked()), qApp, SLOT(quit()));
-    QObject::connect(m_protectHeader, SIGNAL(stateChanged(int)), this, SLOT(headerCacheOuPas()));
-    QObject::connect(m_nomClasse, SIGNAL(textChanged(QString)), this, SLOT(genererHeader()));
+    connect(m_generer, SIGNAL(clicked()), this, SLOT(valideOuPas()));
+    connect(m_quitter, SIGNAL(clicked()), qApp, SLOT(quit()));
+    connect(m_protectHeader, SIGNAL(stateChanged(int)), this, SLOT(headerCacheOuPas()));
+    connect(m_attributs, SIGNAL(stateChanged(int)), this, SLOT(attributsCacheOuPas()));
+    connect(m_nomClasse, SIGNAL(textChanged(QString)), this, SLOT(genererHeader()));
+    connect(m_listeWidgets, SIGNAL(itemActivated(QListWidgetItem*)), this, SLOT(creerAttributs(QListWidgetItem*)));
+    connect(m_ajouter, SIGNAL(clicked()), this, SLOT(ajouter()));
+    connect(m_supprimer, SIGNAL(clicked()), this, SLOT(supprimer()));
+    connect(m_toutSuppr, SIGNAL(clicked()), this, SLOT(toutSupprimer()));
+    connect(m_rechercher, SIGNAL(textChanged(QString)), this, SLOT(rechercher()));
 }
 
 FenPrincipale::~FenPrincipale()
@@ -110,8 +177,22 @@ QString FenPrincipale::genererCodeH()
 
     if(m_protectHeader->isChecked() == true)
     {
-        codeH += "#ifndef " + header.toUpper() + '\n';
-        codeH += "#define " + header.toUpper() + '\n' + '\n' + '\n';
+        if(m_ifndef->isChecked() == true)
+        {
+            if(m_define->isChecked() == true)
+            {
+                codeH += "#ifndef " + header.toUpper() + '\n';
+                codeH += "#define " + header.toUpper() + '\n' + '\n' + '\n';
+            }
+            else
+            {
+                codeH += "#ifndef " + header.toUpper()  + '\n' + '\n' + '\n' + '\n';
+            }
+        }
+        else if(m_define->isChecked() == true)
+        {
+            codeH += "#define " + header.toUpper() + '\n' + '\n' + '\n' + '\n';
+        }
     }
     codeH += "class " + m_nomClasse->text();
 
@@ -151,12 +232,30 @@ QString FenPrincipale::genererCodeH()
         codeH += QString::fromAscii("public:") + '\n' + '\n' + '\n' + '\n';
     }
     codeH += QString::fromAscii("protected:") + '\n' + '\n' + '\n' + '\n';
-    codeH += QString::fromAscii("private:") + '\n' + '\n' + '\n' + '\n';
+
+    if(m_attributs->isChecked() == true)
+    {
+        codeH += QString::fromAscii("private:") + '\n';
+        QString item;
+        int a = m_attributsAAjouter->count();
+        for(int i = 0; i < a; i++)
+        {
+            item = m_attributsAAjouter->item(i)->text();
+            codeH += '\t' + item + '\n';
+        }
+    }
+    else
+    {
+        codeH += QString::fromAscii("private:") + '\n' + '\n' + '\n' + '\n';
+    }
     codeH += QString::fromAscii("};") + '\n' + '\n';
 
     if(m_protectHeader->isChecked() == true)
     {
-        codeH += QString::fromAscii("#endif // ") + header.toUpper();
+        if(m_endif->isChecked() == true)
+        {
+            codeH += QString::fromAscii("#endif // ") + header.toUpper();
+        }
     }
 
     return codeH;
@@ -211,6 +310,33 @@ QString FenPrincipale::genererCodeCpp()
     return codeCpp;
 }
 
+//Ouverture du fichier contenant les classes de Qt
+void FenPrincipale::lireClasses()
+{
+    QString fileName = "/home/nouvalinux/Programmations/Qt/Tp Zero class Generator/classes.txt";
+    QFile fichier(fileName);
+    if(fichier.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        QTextStream in(&fichier);
+        QString classes;
+        while(! in.atEnd())
+        {
+            classes = in.readLine();
+            m_listeWidgets->addItem(classes);
+            fichier.close();
+        }
+    }
+    else
+    {
+        QMessageBox::critical(this, "Erreur", QString::fromUtf8("Le fichier contenant la liste des classes n'a pas pu être ouvert !!!"));
+    }
+}
+
+void FenPrincipale::creerAttributs(QListWidgetItem *item)
+{
+    m_classeAttributs->setText(item->text());
+}
+
 //Licences
 QString FenPrincipale::licenceGPL()
 {
@@ -252,54 +378,48 @@ QString FenPrincipale::licenceLGPL()
     return licence;
 }
 
+
 QString FenPrincipale::licenceChoisi()
 {
     QString licence;
 
-    if(m_listeLicence->currentIndex() == 0)
+    if(m_nomAuteur->text().isEmpty() == true || m_prenomAuteur->text().isEmpty() == true)
     {
-        licence = licenceGPL();
+    emit QMessageBox::critical(this, "Erreur !!!", QString::fromUtf8("Pour choisir une licence, vous devez entrer votre nom et votre prénom !!! "));
     }
-    else if(m_listeLicence->currentIndex() == 1)
+    else
     {
-        licence = licenceLGPL();
+        if(m_listeLicence->currentIndex() == 0)
+        {
+            licence = licenceGPL();
+        }
+        else if(m_listeLicence->currentIndex() == 1)
+        {
+            licence = licenceLGPL();
+        }
     }
-
     return licence;
 }
 
 
 //Slots
+
 void FenPrincipale::montrerCodeGenere()
 {
+    QString nomClasse = m_nomClasse->text();
     QString codeH = genererCodeH();
     QString codeCpp = genererCodeCpp();
-    FenCodeGenere fenetre(codeH, codeCpp);
+    FenCodeGenere *fenetre = new FenCodeGenere(codeH, codeCpp, nomClasse,  this);
+    fenetre->exec();
+
 }
+
 
 void FenPrincipale::valideOuPas()
 {
-    QString nomDeLaClasse = m_nomClasse->text();
-    QString nomAuteur = m_nomAuteur->text();
-    QString prenomAuteur = m_prenomAuteur->text();
-
-    if(nomDeLaClasse.isEmpty() == false)
+    if(m_nomClasse->text().isEmpty() == false)
     {
-        if(m_licence->isChecked() == true)
-        {
-            if(nomAuteur.isEmpty() == true || prenomAuteur.isEmpty() == true)
-            {
-                emit QMessageBox::critical(this, "Erreur !!!", QString::fromUtf8("Si vous choississez une licence, vous devez entrer votre nom et votre prénom !!! "));
-            }
-            else
-            {
-                emit montrerCodeGenere();
-            }
-        }
-        else
-        {
-            emit montrerCodeGenere();
-        }
+        emit montrerCodeGenere();
     }
     else
     {
@@ -308,19 +428,52 @@ void FenPrincipale::valideOuPas()
 }
 
 
+
 void FenPrincipale::headerCacheOuPas()
 {
-    QString nomClasse = m_nomClasse->text();
-
     if(m_header->isHidden())
     {
         m_header->setVisible(true);
+        m_ifndef->setVisible(true);
+        m_define->setVisible(true);
+        m_endif->setVisible(true);
     }
     else if(m_header->isVisible())
     {
         m_header->setHidden(true);
+        m_ifndef->setHidden(true);
+        m_define->setHidden(true);
+        m_endif->setHidden(true);
     }
 }
+
+
+void FenPrincipale::attributsCacheOuPas()
+{
+    if(m_classeAttributs->isHidden())
+    {
+        m_classeAttributs->setVisible(true);
+        m_listeWidgets->setVisible(true);
+        m_ajouter->setVisible(true);
+        m_supprimer->setVisible(true);
+        m_attributsAAjouter->setVisible(true);
+        m_toutSuppr->setVisible(true);
+        m_nomVariableAttributs->setVisible(true);
+        m_rechercher->setVisible(true);
+    }
+    else if(m_classeAttributs->isVisible())
+    {
+        m_classeAttributs->setHidden(true);
+        m_listeWidgets->setHidden(true);
+        m_ajouter->setHidden(true);
+        m_supprimer->setHidden(true);
+        m_attributsAAjouter->setHidden(true);
+        m_toutSuppr->setHidden(true);
+        m_nomVariableAttributs->setHidden(true);
+        m_rechercher->setHidden(true);
+    }
+}
+
 
 void FenPrincipale::genererHeader()
 {
@@ -329,5 +482,44 @@ void FenPrincipale::genererHeader()
 }
 
 
+void FenPrincipale::ajouter()
+{
+    QString condition = "*m_";
+    if(m_classeAttributs->text().isEmpty() == false)
+    {
+        QString textPrincipale;
+        QString text = m_classeAttributs->text();
+        QString text2 = m_nomVariableAttributs->text();
+        textPrincipale = text + " " + text2;
+        m_attributsAAjouter->addItem(textPrincipale);
+        m_classeAttributs->clear();
+        m_nomVariableAttributs->clear();
+        m_nomVariableAttributs->setText("*m_Ex_emple");
+
+    }
+    else
+    {
+        emit QMessageBox::critical(this, "Erreur !!!", "Certains champs ne sont pas remplis !!!");
+    }
+}
 
 
+void FenPrincipale::supprimer()
+{
+    m_attributsAAjouter->takeItem(m_attributsAAjouter->currentRow());
+}
+
+
+void FenPrincipale::toutSupprimer()
+{
+    m_attributsAAjouter->clear();
+}
+
+
+void FenPrincipale::rechercher()
+{
+    QString text = m_rechercher->text();
+
+    QList<QListWidgetItem *> list = m_listeWidgets->findItems(text, Qt::MatchStartsWith);
+    m_listeWidgets->setCurrentItem(list.at(0));
+}
