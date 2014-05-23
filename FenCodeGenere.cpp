@@ -11,7 +11,7 @@ FenCodeGenere::FenCodeGenere(QString &codeHeader, QString &codeCpp, QString &nom
 {
      nomClasse = nom;
     //Création de la seconde fenêtre
-    m_fenetreCodeGenere = new QDialog();
+    m_fenetreCodeGenere = new QDialog(this);
     m_fenetreCodeGenere->setModal(true);
     setGeometry(600, 600, 600, 600);
     m_codeGenere = new QVBoxLayout(this);

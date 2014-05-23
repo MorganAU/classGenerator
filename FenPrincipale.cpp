@@ -7,7 +7,7 @@ FenPrincipale::FenPrincipale() : QWidget()
     setGeometry(800, 800, 800, 1000);
 
     //Définition de la classe
-    m_defClasse = new QGroupBox(QString::fromUtf8("Définition de la classe"));
+    m_defClasse = new QGroupBox(QString::fromUtf8("Définition de la classe"), this);
     m_infosClasse = new QFormLayout(m_defClasse);
     m_nomClasse = new QLineEdit("Ex_emple");
     m_classeMere = new QLineEdit("Ex_emple");
@@ -44,9 +44,8 @@ FenPrincipale::FenPrincipale() : QWidget()
     m_parametreAttribut->addWidget(m_nomVariableAttributs);
     m_ajouter = new QPushButton("Ajouter");
     m_ajouter->hide();
-    m_listeWidgets = new QListWidget();
+    m_listeWidgets = new QListWidget(this);
     m_listeWidgets->hide();
-    lireClasses();
     m_listeWidgets->takeItem(831);
     m_attributsAAjouter = new QListWidget();
     m_attributsAAjouter->hide();
@@ -120,17 +119,17 @@ FenPrincipale::FenPrincipale() : QWidget()
 
     //Règles de caractères
     QRegExp rx("^[A-Z]+[A-Za-z_]+$");
-    QValidator *validatorClasse = new QRegExpValidator(rx);
+    QValidator *validatorClasse = new QRegExpValidator(rx, this);
     m_classeMere->setValidator(validatorClasse);
     m_nomClasse->setValidator(validatorClasse);
 
     QRegExp rxAuteur("^[A-Za-z]+$");
-    QValidator *validatorAuteur = new QRegExpValidator(rxAuteur);
+    QValidator *validatorAuteur = new QRegExpValidator(rxAuteur, this);
     m_nomAuteur->setValidator(validatorAuteur);
     m_prenomAuteur->setValidator(validatorAuteur);
 
     QRegExp rxAttribut("^[*m_]+[a-z]+[A-Z]+$");
-    QValidator *validatorAttribut = new QRegExpValidator(rxAttribut);
+    QValidator *validatorAttribut = new QRegExpValidator(rxAttribut, this);
     m_nomVariableAttributs->setValidator(validatorAttribut);
 
     //Connections signaux et slots
@@ -323,13 +322,14 @@ void FenPrincipale::lireClasses()
         {
             classes = in.readLine();
             m_listeWidgets->addItem(classes);
-            fichier.close();
         }
     }
     else
     {
         QMessageBox::critical(this, "Erreur", QString::fromUtf8("Le fichier contenant la liste des classes n'a pas pu être ouvert !!!"));
     }
+    fichier.close();
+
 }
 
 void FenPrincipale::creerAttributs(QListWidgetItem *item)
@@ -411,7 +411,6 @@ void FenPrincipale::montrerCodeGenere()
     QString codeCpp = genererCodeCpp();
     FenCodeGenere *fenetre = new FenCodeGenere(codeH, codeCpp, nomClasse,  this);
     fenetre->exec();
-
 }
 
 
@@ -460,6 +459,7 @@ void FenPrincipale::attributsCacheOuPas()
         m_toutSuppr->setVisible(true);
         m_nomVariableAttributs->setVisible(true);
         m_rechercher->setVisible(true);
+        lireClasses();
     }
     else if(m_classeAttributs->isVisible())
     {
@@ -471,6 +471,7 @@ void FenPrincipale::attributsCacheOuPas()
         m_toutSuppr->setHidden(true);
         m_nomVariableAttributs->setHidden(true);
         m_rechercher->setHidden(true);
+        m_listeWidgets->clear();
     }
 }
 
